@@ -1,7 +1,7 @@
 import { Timestamp } from '@angular/fire/firestore';
 import { ProfileUser } from './user-profile';
 
-export interface Chat {
+export interface Chats {
   id: string;
   lastMessage?: string;
   lastMessageDate?: Date & Timestamp;

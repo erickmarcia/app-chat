@@ -2,6 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import {
   combineLatest,
+  filter,
   map,
   Observable,
   of,
@@ -9,8 +10,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { Message } from 'src/app/models/Chat';
-// import { Message } from 'src/app/models/chat';
+import { Message } from 'src/app/models/chats';
 import { ProfileUser } from 'src/app/models/user-profile';
 import { ChatsService } from 'src/app/services/chats.service';
 import { UsersService } from 'src/app/services/users.service';
@@ -43,7 +43,7 @@ export class ChatsComponent implements OnInit {
   ]).pipe(
     map(([users, searchString]) => {
       return users.filter((u) =>
-        u.displayName?.toLowerCase().includes(searchString.toLowerCase())
+        u.displayName?.toLowerCase().includes(searchString || ''.toLowerCase())
       );
     })
   );
@@ -51,7 +51,12 @@ export class ChatsComponent implements OnInit {
   selectedChat$ = combineLatest([
     this.chatListControl.valueChanges,
     this.myChats$,
-  ]).pipe(map(([value, chats]) => chats.find((c) => c.id === value[0])));
+  ]).pipe(
+    map(([value, chats]) =>
+      value && value.length > 0 ? chats.find((c) => c.id === value[0]) : null
+    )
+    // map(([value, chats]) => chats.find((c) => c.id === value[0]))
+  );
 
   constructor(
     private usersService: UsersService,
@@ -60,7 +65,9 @@ export class ChatsComponent implements OnInit {
 
   ngOnInit(): void {
     this.messages$ = this.chatListControl.valueChanges.pipe(
-      map((value) => value[0]),
+      // map((value) => value[0] : null),
+      map((value) => (value && value.length > 0 ? value[0] : null)),
+      filter((val: any) => !!val),
       switchMap((chatId) => this.chatsService.getChatMessages$(chatId)),
       tap(() => {
         this.scrollToBottom();
@@ -81,21 +88,21 @@ export class ChatsComponent implements OnInit {
         })
       )
       .subscribe((chatId) => {
-        this.chatListControl.setValue([chatId]);
+        this.chatListControl.setValue(chatId);
       });
   }
 
   sendMessage() {
-    // const message = this.messageControl.value;
-    // const selectedChatId = this.chatListControl.value[0];
-    // if (message && selectedChatId) {
-    //   this.chatsService
-    //     .addChatMessage(selectedChatId, message)
-    //     .subscribe(() => {
-    //       this.scrollToBottom();
-    //     });
-    //   this.messageControl.setValue('');
-    // }
+    const message = this.messageControl.value;
+    const selectedChatId = this.chatListControl.value || ''[0];
+    if (message && selectedChatId) {
+      this.chatsService
+        .addChatMessage(selectedChatId, message)
+        .subscribe(() => {
+          this.scrollToBottom();
+        });
+      this.messageControl.setValue('');
+    }
   }
 
   scrollToBottom() {

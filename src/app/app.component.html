@@ -2,9 +2,9 @@
   Angular Chat App with Firebase
   <ng-container *ngIf="user$ | async as user; else loginButton">
     <button mat-button [matMenuTriggerFor]="userMenu">
-      <img width="30" height="30" class="profile-image-toolbar"
+      <!-- <img width="30" height="30" class="profile-image-toolbar"
         [src]="user.photoURL ?? 'assets/images/image-placeholder.png'" />
-      {{ user.displayName }}
+      {{ user.displayName }} -->
       <mat-icon>expand_more</mat-icon>
     </button>
   </ng-container>

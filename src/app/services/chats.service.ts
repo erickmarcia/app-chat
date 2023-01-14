@@ -13,7 +13,7 @@ import {
   where,
 } from '@angular/fire/firestore';
 import { concatMap, from, map, Observable, take, tap } from 'rxjs';
-import { Chat, Message } from '../models/Chat';
+import { Chats, Message } from '../models/chats';
 import { ProfileUser } from '../models/user-profile';
 import { UsersService } from './users.service';
 
@@ -26,7 +26,7 @@ export class ChatsService {
     private usersService: UsersService
   ) {}
 
-  get myChats$(): Observable<Chat[]> {
+  get myChats$(): Observable<Chats[]> {
     const ref = collection(this.firestore, 'chats');
     return this.usersService.currentUserProfile$.pipe(
       concatMap((user) => {
@@ -36,7 +36,7 @@ export class ChatsService {
         );
         return collectionData(myQuery, { idField: 'id' }).pipe(
           map((chats: any) => this.addChatNameAndPic(user?.uid, chats))
-        ) as Observable<Chat[]>;
+        ) as Observable<Chats[]>;
       })
     );
   }
@@ -104,8 +104,11 @@ export class ChatsService {
     return collectionData(queryAll) as Observable<Message[]>;
   }
 
-  addChatNameAndPic(currentUserId: string | undefined, chats: Chat[]): Chat[] {
-    chats.forEach((chat: Chat) => {
+  addChatNameAndPic(
+    currentUserId: string | undefined,
+    chats: Chats[]
+  ): Chats[] {
+    chats.forEach((chat: Chats) => {
       const otherUserIndex =
         chat.userIds.indexOf(currentUserId ?? '') === 0 ? 1 : 0;
       const { displayName, photoURL } = chat.users[otherUserIndex];
